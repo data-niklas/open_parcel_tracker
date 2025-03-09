@@ -4,3 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+serde = {version="1.0.218", features=["serde_derive"]}
+ehttp = {version="0.5.0", features=["json", "native-async"]}
+async-trait = "0.1.87"
+chrono = { version = "0.4.40", features = ["serde"] }
+icu_locid = { version = "1.5.0", features = ["serde"] }
+strum = "0.27.1"
+strum_macros = "0.27.1"
+
+clap = {version="4.5.31", optional=true}
+futures = "0.3.31"
+
+[features]
+default = []
+cli = ["dep:clap"]
