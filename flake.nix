@@ -48,8 +48,8 @@
           pkg-config
           rust-analyzer
           bacon
+          cargo-watch
           stdenv.cc.cc.lib
-          trunk
         ];
         LD_LIBRARY_PATH = nixpkgs.lib.makeLibraryPath packages;
       };

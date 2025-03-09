@@ -1,0 +1,77 @@
+html {
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.5;
+    color: #333;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#header {
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#app {
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #e3e3e3;
+}
+
+#footer {
+    height: 28px;
+}
+
+#parcel-events, #back {
+    display: none;
+}
+
+#addParcel {
+    padding: 4px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+#addParcel:focus {
+    outline: 2px solid #e050c3;
+    border-color: #e050c3;
+}
+
+#app > ul {
+    max-width: 800px;
+    min-width: 500px;
+}
+
+#app > ul > li {
+    background: #fcfcfc;
+    padding: 7px;
+    border-radius: 5px;
+    margin: 8px 0;
+}
+
+#app > ul > li:hover {
+    background: #fff;
+    transform: scale(1.01);
+}
+
+.parcel-card-line {
+    display: flex;
+    justify-content: space-between;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}

@@ -59,7 +59,7 @@ pub async fn track(
                 .iter()
                 .map(|detail| CarrierParcelEvent {
                     datetime: Utc.timestamp_opt(detail.time / 1000, 0).single().unwrap(),
-                    description: format!("{}: {}", detail.descTitle, detail.desc),
+                    description: format!("{} {}", detail.descTitle, detail.desc),
                     region: None,
                 })
                 .collect();

@@ -5,38 +5,38 @@ use futures::future::join_all;
 use icu_locid::subtags::Language;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct SendungsEvent {
     datum: DateTime<Utc>,
     status: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[allow(non_snake_case)]
 struct Sendungsverlauf {
     events: Vec<SendungsEvent>,
     kurzStatus: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Sendungsdetails {
     sendungsverlauf: Sendungsverlauf,
     zielland: String,
     quelle: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Sendungsinfo {
-    sendungsname: String,
+    sendungsname: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Sendung {
     sendungsdetails: Sendungsdetails,
     sendungsinfo: Sendungsinfo,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct ResponseBody {
     sendungen: Vec<Sendung>,
 }
@@ -79,7 +79,7 @@ pub async fn track_single(
     let end_region = sendungsdetails.zielland.clone();
     let status = sendungsdetails.sendungsverlauf.kurzStatus.clone();
     let product = Some(sendungsdetails.quelle.clone());
-    let name = Some(body.sendungen[0].sendungsinfo.sendungsname.clone());
+    let name = body.sendungen[0].sendungsinfo.sendungsname.clone();
 
     Ok(Some(CarrierParcel {
         id: parcel_id.to_owned(),

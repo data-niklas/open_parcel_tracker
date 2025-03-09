@@ -6,14 +6,14 @@ use icu_locid::subtags::Language;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[allow(non_snake_case)]
 struct Track {
     tkDate: DateTime<Utc>,
     tkTranslatedDesc: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[allow(non_snake_case)]
 struct ParcelData {
     ctStartName: String,
@@ -21,7 +21,7 @@ struct ParcelData {
     tracks: Option<Vec<Track>>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct ResponseBody {
     data: Vec<ParcelData>,
 }
@@ -36,7 +36,7 @@ pub async fn track_single(
     parcel_id: &str,
     locale: &Language,
 ) -> Result<Option<CarrierParcel>, TrackingError> {
-    let url = "https://m-track.4px.com/track/v2/front/listTrackV3";
+    let url = "https://track.4px.com/track/v2/front/listTrackV3";
     let request_params = RequestParams {
         language: locale.as_str().to_owned(),
         queryCodes: vec![parcel_id.to_owned()],
@@ -72,14 +72,13 @@ pub async fn track_single(
     let status = events[0].description.clone();
     let start_region = Some(body.data[0].ctStartName.clone());
     let end_region = body.data[0].ctEndName.clone();
-
     Ok(Some(CarrierParcel {
         id: parcel_id.to_owned(),
         events,
         start_region,
         end_region,
         status,
-        carrier: Carrier::DHL,
+        carrier: Carrier::FourPX,
         product: None,
         name: None,
     }))
