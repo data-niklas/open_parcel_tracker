@@ -1,7 +1,7 @@
 use crate::{Carrier, CarrierParcel, CarrierParcelEvent, TrackingError};
 use chrono::{TimeZone, Utc};
 use ehttp::{fetch_async, Request};
-use icu_locid::Locale;
+use icu_locid::subtags::Language;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -28,18 +28,16 @@ struct ResponseBody {
 
 pub async fn track(
     parcels: Vec<&str>,
-    locale: Locale,
+    locale: Language,
 ) -> Result<Vec<Option<CarrierParcel>>, TrackingError> {
     let joined_parcel_ids = parcels.join(",");
     let url = format!(
         "https://global.cainiao.com/global/detail.json?mailNos={}&lang={}&language={}",
-        joined_parcel_ids, locale.id.language, locale.id.language
+        joined_parcel_ids, locale, locale
     );
     let mut request = Request::get(url);
     request.headers.insert("Accept", "application/json");
-    request
-        .headers
-        .insert("Accept-Language", locale.id.language);
+    request.headers.insert("Accept-Language", locale);
     request.headers.insert("Content-Type", "application/json");
 
     let response = match fetch_async(request).await {
@@ -81,4 +79,3 @@ pub async fn track(
         })
         .collect())
 }
-

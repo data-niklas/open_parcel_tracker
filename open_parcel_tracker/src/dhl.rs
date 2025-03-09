@@ -2,7 +2,7 @@ use crate::{Carrier, CarrierParcel, CarrierParcelEvent, TrackingError};
 use chrono::{DateTime, Utc};
 use ehttp::{fetch_async, Request};
 use futures::future::join_all;
-use icu_locid::Locale;
+use icu_locid::subtags::Language;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -43,17 +43,15 @@ struct ResponseBody {
 
 pub async fn track_single(
     parcel_id: &str,
-    locale: &Locale,
+    locale: &Language,
 ) -> Result<Option<CarrierParcel>, TrackingError> {
     let url = format!(
         "https://www.dhl.de/int-verfolgen/data/search?piececode={}&language={}",
-        parcel_id, locale.id.language
+        parcel_id, locale
     );
     let mut request = Request::get(url);
     request.headers.insert("Accept", "application/json");
-    request
-        .headers
-        .insert("Accept-Language", locale.id.language);
+    request.headers.insert("Accept-Language", locale);
     request.headers.insert("Content-Type", "application/json");
 
     let response = match fetch_async(request).await {
@@ -97,7 +95,7 @@ pub async fn track_single(
 
 pub async fn track(
     parcels: Vec<&str>,
-    locale: Locale,
+    locale: Language,
 ) -> Result<Vec<Option<CarrierParcel>>, TrackingError> {
     let mut results = Vec::with_capacity(parcels.len());
     for parcel in parcels {

@@ -2,7 +2,7 @@ use crate::{Carrier, CarrierParcel, CarrierParcelEvent, TrackingError};
 use chrono::{DateTime, Utc};
 use ehttp::{fetch_async, Request};
 use futures::future::join_all;
-use icu_locid::Locale;
+use icu_locid::subtags::Language;
 use serde::{Deserialize, Serialize};
 use serde_json;
 
@@ -34,19 +34,17 @@ struct RequestParams {
 }
 pub async fn track_single(
     parcel_id: &str,
-    locale: &Locale,
+    locale: &Language,
 ) -> Result<Option<CarrierParcel>, TrackingError> {
     let url = "https://m-track.4px.com/track/v2/front/listTrackV3";
     let request_params = RequestParams {
-        language: locale.id.to_string(),
+        language: locale.as_str().to_owned(),
         queryCodes: vec![parcel_id.to_owned()],
-        translateLanguage: locale.id.to_string(),
+        translateLanguage: locale.as_str().to_string(),
     };
     let mut request = Request::post(url, serde_json::to_vec(&request_params).unwrap());
     request.headers.insert("Accept", "application/json");
-    request
-        .headers
-        .insert("Accept-Language", locale.id.language);
+    request.headers.insert("Accept-Language", locale);
     request.headers.insert("Content-Type", "application/json");
 
     let response = match fetch_async(request).await {
@@ -89,7 +87,7 @@ pub async fn track_single(
 
 pub async fn track(
     parcels: Vec<&str>,
-    locale: Locale,
+    locale: Language,
 ) -> Result<Vec<Option<CarrierParcel>>, TrackingError> {
     let mut results = Vec::with_capacity(parcels.len());
     for parcel in parcels {

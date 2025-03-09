@@ -1,7 +1,6 @@
-use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use futures::future::join_all;
-use icu_locid::Locale;
+use icu_locid::subtags::Language;
 use serde::{Deserialize, Serialize};
 use strum::{EnumCount, IntoEnumIterator};
 use strum_macros::{EnumCount, EnumIter};
@@ -127,21 +126,20 @@ impl std::fmt::Display for TrackingError {
 
 impl std::error::Error for TrackingError {}
 
-#[async_trait]
+#[trait_variant::make(SendableCarrierSrevice: Send)]
 pub trait CarrierService {
     async fn track(
         self,
         parcels: Vec<&str>,
-        locale: Locale,
+        locale: Language,
     ) -> Result<Vec<Option<CarrierParcel>>, TrackingError>;
 }
 
-#[async_trait]
 impl CarrierService for Carrier {
     async fn track(
         self,
         parcels: Vec<&str>,
-        locale: Locale,
+        locale: Language,
     ) -> Result<Vec<Option<CarrierParcel>>, TrackingError> {
         match self {
             Carrier::DHL => dhl::track(parcels, locale).await,
@@ -152,8 +150,8 @@ impl CarrierService for Carrier {
 }
 
 pub async fn track_parcels(
-    parcels: &[(&str, &[Carrier])],
-    locale: Locale,
+    parcels: &[(String, Vec<Carrier>)],
+    locale: Language,
 ) -> Result<Vec<Option<Parcel>>, TrackingError> {
     let mut parcels_per_carrier: [Vec<&str>; Carrier::COUNT] = Default::default();
     for (parcel, carriers) in parcels.iter() {

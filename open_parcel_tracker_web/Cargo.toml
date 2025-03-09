@@ -2,5 +2,13 @@
 name = "open_parcel_tracker_web"
 version = "0.1.0"
 edition = "2021"
+crate-type = ["cdylib"]
+
+
 
 [dependencies]
+icu_locid = {version="1.5.0", features=["serde"]}
+open_parcel_tracker = {path = "../open_parcel_tracker", default-features = false}
+serde-wasm-bindgen = "0.6.5"
+wasm-bindgen = {version="0.2.100", features=["serde"]}
+wasm-bindgen-futures = "0.4.50"

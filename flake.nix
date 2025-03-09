@@ -49,6 +49,7 @@
           rust-analyzer
           bacon
           stdenv.cc.cc.lib
+          trunk
         ];
         LD_LIBRARY_PATH = nixpkgs.lib.makeLibraryPath packages;
       };
