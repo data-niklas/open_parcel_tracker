@@ -3,53 +3,46 @@ use chrono::{DateTime, Utc};
 use ehttp::{fetch_async, Request};
 use futures::future::join_all;
 use icu_locid::Locale;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Deserialize)]
-struct SendungsEvent {
-    datum: DateTime<Utc>,
-    status: String,
+#[allow(non_snake_case)]
+struct Track {
+    tkDate: DateTime<Utc>,
+    tkTranslatedDesc: String,
 }
 
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
-struct Sendungsverlauf {
-    events: Vec<SendungsEvent>,
-    kurzStatus: String,
-}
-
-#[derive(Deserialize)]
-struct Sendungsdetails {
-    sendungsverlauf: Sendungsverlauf,
-    zielland: String,
-    quelle: String,
-}
-
-#[derive(Deserialize)]
-struct Sendungsinfo {
-    sendungsname: String,
-}
-
-#[derive(Deserialize)]
-struct Sendung {
-    sendungsdetails: Sendungsdetails,
-    sendungsinfo: Sendungsinfo,
+struct ParcelData {
+    ctStartName: String,
+    ctEndName: String,
+    tracks: Option<Vec<Track>>,
 }
 
 #[derive(Deserialize)]
 struct ResponseBody {
-    sendungen: Vec<Sendung>,
+    data: Vec<ParcelData>,
 }
-
+#[derive(Serialize)]
+#[allow(non_snake_case)]
+struct RequestParams {
+    language: String,
+    queryCodes: Vec<String>,
+    translateLanguage: String,
+}
 pub async fn track_single(
     parcel_id: &str,
     locale: &Locale,
 ) -> Result<Option<CarrierParcel>, TrackingError> {
-    let url = format!(
-        "https://www.dhl.de/int-verfolgen/data/search?piececode={}&language={}",
-        parcel_id, locale.id.language
-    );
-    let mut request = Request::get(url);
+    let url = "https://m-track.4px.com/track/v2/front/listTrackV3";
+    let request_params = RequestParams {
+        language: locale.id.to_string(),
+        queryCodes: vec![parcel_id.to_owned()],
+        translateLanguage: locale.id.to_string(),
+    };
+    let mut request = Request::post(url, serde_json::to_vec(&request_params).unwrap());
     request.headers.insert("Accept", "application/json");
     request
         .headers
@@ -65,23 +58,22 @@ pub async fn track_single(
         return Ok(None);
     }
     let body = deserialized_response.unwrap();
-    let events = body.sendungen[0]
-        .sendungsdetails
-        .sendungsverlauf
-        .events
+
+    let tracks = match &body.data[0].tracks {
+        Some(tracks) => tracks,
+        None => return Ok(None),
+    };
+    let events: Vec<CarrierParcelEvent> = tracks
         .iter()
-        .map(|event| CarrierParcelEvent {
-            datetime: event.datum,
-            description: event.status.clone(),
+        .map(|track| CarrierParcelEvent {
+            datetime: track.tkDate,
+            description: track.tkTranslatedDesc.clone(),
             region: None,
         })
         .collect();
-    let start_region = None;
-    let sendungsdetails = &body.sendungen[0].sendungsdetails;
-    let end_region = sendungsdetails.zielland.clone();
-    let status = sendungsdetails.sendungsverlauf.kurzStatus.clone();
-    let product = Some(sendungsdetails.quelle.clone());
-    let name = Some(body.sendungen[0].sendungsinfo.sendungsname.clone());
+    let status = events[0].description.clone();
+    let start_region = Some(body.data[0].ctStartName.clone());
+    let end_region = body.data[0].ctEndName.clone();
 
     Ok(Some(CarrierParcel {
         id: parcel_id.to_owned(),
@@ -90,8 +82,8 @@ pub async fn track_single(
         end_region,
         status,
         carrier: Carrier::DHL,
-        product,
-        name,
+        product: None,
+        name: None,
     }))
 }
 

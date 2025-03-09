@@ -640,6 +640,7 @@ dependencies = [
  "futures",
  "icu_locid",
  "serde",
+ "serde_json",
  "strum",
  "strum_macros",
 ]
