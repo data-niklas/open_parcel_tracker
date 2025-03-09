@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["open_parcel_tracker", "open_parcel_tracker_cli", "open_parcel_tracker_web"]

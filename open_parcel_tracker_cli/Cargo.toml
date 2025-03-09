@@ -1,0 +1,6 @@
+[package]
+name = "open_parcel_tracker_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
