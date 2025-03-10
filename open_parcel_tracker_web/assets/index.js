@@ -57,7 +57,7 @@ class App {
             let bEvent = b.events[b.events.length - 1];
             return aEvent.datetime.localeCompare(bEvent.datetime);
         });
-        let parcelItems = parcels.map(this.buildParcelItem);
+        let parcelItems = parcels.map((parcel)=>this.buildParcelItem(parcel));
         parcelList.innerHTML = "";
         parcelItems.forEach((item) => parcelList.appendChild(item));
     }
@@ -105,8 +105,8 @@ class App {
   hour12: false,
 };
         const locale = navigator.language;
-        let humanLastEvent = parsedLastEvent.toLocaleString(locale, options);
-        let humanFirstEvent = parsedFirstEvent.toLocaleString(locale, options);
+        let humanLastEvent = parsedLastEvent.toLocaleString("en-CA", options);
+        let humanFirstEvent = parsedFirstEvent.toLocaleString("en-CA", options);
         item.innerHTML = `
             <div class="parcel-card-line">
                 <span class="parcel-id">${id}</span>
@@ -125,7 +125,66 @@ class App {
                 <span class="parcel-carriers">${parcel.carriers.join(", ")}</span>
             </div>
         `;
+        item.addEventListener("click", (_) => {
+            this.displayParcelDetails(parcel.id);
+            this.switchView(false);
+        });
         return item;
+    }
+
+    displayParcelDetails(parcelId) {
+        let parcel = this.loadParcel(parcelId);
+        let parcelDetails = document.getElementById("parcel-events");
+        parcelDetails.innerHTML = "";
+        parcel.events.forEach((event)=>{
+            parcelDetails.appendChild(this.buildParcelEvent(event));
+        });
+    }
+
+    buildParcelEvent(event) {
+        // datetime, optional region, description, carrier
+        let item = document.createElement("li");
+        item.classList.add("parcel-event");
+        let parsedEvent = new Date(event.datetime);
+        const options = {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+};
+        const locale = navigator.language;
+        let humanEvent = parsedEvent.toLocaleString("en-CA", options);
+        item.innerHTML = `
+            <div class="parcel-card-line">
+                <span class="parcel-event-description">${event.description}</span>
+                <span class="parcel-event-region">${event.region || ""}</span>
+            </div>
+            <div class="parcel-card-line">
+                <span class="parcel-event-datetime">${humanEvent}</span>
+                <span class="parcel-event-carrier">${event.carrier}</span>
+            </div>
+        `;
+        return item;
+    }
+
+
+    switchView(firstView){
+        let parcelList = document.getElementById("parcel-list");
+        let parcelDetails = document.getElementById("parcel-events");
+        let addParcel = document.getElementById("addParcel");
+        this.view = firstView;
+        if (firstView){
+            parcelList.style.display = "block";
+            parcelDetails.style.display = "none";
+            addParcel.style.display = "block";
+        }
+        else {
+            parcelList.style.display = "none";
+            parcelDetails.style.display = "block";
+            addParcel.style.display = "none";
+        }
     }
 
 

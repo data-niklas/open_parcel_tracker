@@ -59,7 +59,7 @@ impl TryFrom<Vec<CarrierParcel>> for Parcel {
                     datetime: event.datetime,
                     region: event.region.clone(),
                     description: event.description.clone(),
-                    carrier: Some(carrier_parcel.carrier),
+                    carrier: carrier_parcel.carrier,
                 })
             })
             .collect();
@@ -94,7 +94,7 @@ pub struct ParcelEvent {
     pub datetime: DateTime<Utc>,
     pub region: Option<String>,
     pub description: String,
-    pub carrier: Option<Carrier>,
+    pub carrier: Carrier,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, EnumCount, EnumIter)]

@@ -64,6 +64,7 @@ body {
 #app > ul > li:hover {
     background: #fff;
     transform: scale(1.01);
+    outline: 2px dotted #ff8fde;
 }
 
 .parcel-card-line {
@@ -74,4 +75,8 @@ body {
 ul {
     list-style-type: none;
     padding: 0;
+}
+
+.parcel-status, .parcel-last-event, .parcel-event-description {
+    font-weight: bold;
 }
