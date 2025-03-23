@@ -44,15 +44,18 @@ fn carriers() -> Json<Vec<Carrier>> {
 
 #[post("/track", data = "<json>")]
 async fn track(json: Json<TrackRequest>) -> Json<Result<Vec<Option<Parcel>>, TrackingError>> {
-    let json = json.into_inner();
+    let json: TrackRequest = json.into_inner();
     let parcels = track_parcels(&json.parcels, json.language.language).await;
     parcels.into()
 }
 
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount(
-        "/",
-        routes![default, index_html, index_js, index_css, carriers, track],
-    )
+#[rocket::main]
+async fn main() {
+    let _ = rocket::build()
+        .mount(
+            "/",
+            routes![default, index_html, index_js, index_css, carriers, track],
+        )
+        .launch()
+        .await;
 }

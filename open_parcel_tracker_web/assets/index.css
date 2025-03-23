@@ -19,6 +19,27 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    background: #421434;
+}
+
+#header > * {
+    margin: 0 5px;
+}
+
+#header > button {
+    width: 30px;
+    height: 30px;
+    font-size: 21px;
+    padding: 4px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #e050c3;
+    font-weight: bolder;
+}
+
+#header > button:hover {
+    background: #f3f3f3;
 }
 
 #app {
@@ -42,6 +63,7 @@ body {
     padding: 4px;
     border-radius: 3px;
     border: 1px solid #ccc;
+    font-size: 16.5px;
 }
 
 #addParcel:focus {

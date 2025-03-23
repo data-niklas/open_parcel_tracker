@@ -1,9 +1,12 @@
+const zip = (arr1, arr2) => arr1.map((element, index) => [element, arr2[index]]);
+
 class App {
     constructor() {
         this.init();
     }
 
     async init() {
+        this.updateInterval = 1000 * 60 * 15; // 15 minutes
         await this.loadCarriers();
         this.loadParcels();
         this.displayParcels();
@@ -19,19 +22,25 @@ class App {
 	}
 
     loadParcels() {
-        return Object.values(localStorage).map(JSON.parse);
+        return Object.values(localStorage).map(JSON.parse).map((parcel) => {
+            parcel.addTime = new Date(parcel.addTime);
+            return parcel;
+        });
     }
 
     loadParcel(parcel) {
-        return JSON.parse(localStorage.getItem(parcel));
+        let parsed_parcel = JSON.parse(localStorage.getItem(parcel));
+        parsed_parcel.addTime = new Date(parsed_parcel.addTime);
+        return parsed_parcel;
     }
 
     hasParcel(parcel) {
         return localStorage.getItem(parcel) !== null;
     }
 
-    addParcel(parcel, data) {
-        localStorage.setItem(parcel, JSON.stringify(data));
+    addParcel(parcel_id, parcel) {
+        parcel.addTime = new Date().toISOString();
+        localStorage.setItem(parcel_id, JSON.stringify(parcel));
     }
 
 
@@ -62,20 +71,38 @@ class App {
         parcelItems.forEach((item) => parcelList.appendChild(item));
     }
 
+    setMaybeParcel(parcel, parcel_id) {
+        if (parcel === null) {
+            localStorage.removeItem(parcel_id);
+            return;
+        }
+        this.addParcel(parcel_id, parcel);
+    }
+
+
     async updateParcels() {
         let parcels = this.loadParcels();
         let request = [];
+        let now = new Date();
         for (let parcel of parcels) {
+            if (now - parcel.addTime < this.updateInterval) {
+                console.log("Skipping parcel", parcel.id);
+                continue;
+            }
             let carriers = parcel.carriers;
             let id = parcel.id;
             request.push([id, carriers]);
+        }
+        if (request.length === 0) {
+            return;
         }
         let response = await this.trackParcels(request, navigator.language);
             let result = await response.json();
             if (result.Ok !== null) {
                 console.log(result.Ok);
-                for (let parcel of result.Ok) {
-                    localStorage.setItem(parcel.id, JSON.stringify(parcel));
+                let parcel_with_id_and_carrier = zip(result.Ok, request);
+                for (let parcel of parcel_with_id_and_carrier) {
+                    this.setMaybeParcel(parcel[0], parcel[1][0]);
                 }
                 this.displayParcels();
             }
@@ -174,16 +201,19 @@ class App {
         let parcelList = document.getElementById("parcel-list");
         let parcelDetails = document.getElementById("parcel-events");
         let addParcel = document.getElementById("addParcel");
+        let backButton = document.getElementById("back");
         this.view = firstView;
         if (firstView){
             parcelList.style.display = "block";
             parcelDetails.style.display = "none";
             addParcel.style.display = "block";
+            backButton.style.display = "none";
         }
         else {
             parcelList.style.display = "none";
             parcelDetails.style.display = "block";
             addParcel.style.display = "none";
+            backButton.style.display = "block";
         }
     }
 
@@ -212,6 +242,8 @@ class App {
         });
         let refreshButton = document.getElementById("refreshButton");
         refreshButton.addEventListener("click", async (_) => await this.updateParcels());
+        let backButton = document.getElementById("back");
+        backButton.addEventListener("click", (_) => this.switchView(true));
     }
 
 }
