@@ -257,7 +257,7 @@ class App {
         if (firstView){
             parcelList.style.display = "block";
             parcelListArchive.style.display = "block";
-            archiveTitle.style.display = "block";
+            archiveTitle.style.display = "flex";
             parcelDetails.style.display = "none";
             addParcel.style.display = "block";
             backButton.style.display = "none";
