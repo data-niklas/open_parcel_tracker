@@ -8,12 +8,23 @@
         <div id="header">
             <button id="back">←</button>
             <input type="text" id="addParcel" placeholder="Add parcel" />
-            <button id="refreshButton">↻</button>
+            <button id="refreshButton" title="Archived parcels are not refreshed">↻</button>
         </div>
         <div id="app">
             <ul id="parcel-list"></ul>
+            <div id="archive-title">
+                <span>Archived Parcels</span>
+            </div>
+            <ul id="parcel-list-archive"></ul>
             <ul id="parcel-events"></ul>
         </div>
-        <div id="footer"></div>
+        <div id="footer">The server does not store any information and forwards requests to the parcel carriers. Your browser stores all data in local storage.</div>
+        <dialog id="confirm-delete-dialog">
+            <p>Are you sure you want to delete this parcel?</p>
+            <div id="parcel-delete-button-bar">
+                <button id="confirm-delete">Delete</button>
+                <button id="cancel-delete" autofocus>Cancel</button>
+            </div>
+        </dialog>
   </body>
 </html>

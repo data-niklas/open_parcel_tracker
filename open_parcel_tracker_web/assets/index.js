@@ -11,6 +11,7 @@ class App {
         this.loadParcels();
         this.displayParcels();
         this.initEvents();
+        this.initEscapeKeyBack();
         console.log("App initialized");
         console.log(this.carriers);
     }
@@ -66,9 +67,18 @@ class App {
             let bEvent = b.events[b.events.length - 1];
             return aEvent.datetime.localeCompare(bEvent.datetime);
         });
-        let parcelItems = parcels.map((parcel)=>this.buildParcelItem(parcel));
+        let parcelItems = parcels.filter((parcel)=>{
+            return parcel.archived === undefined || parcel.archived === false;
+        }).map((parcel)=>this.buildParcelItem(parcel));
         parcelList.innerHTML = "";
         parcelItems.forEach((item) => parcelList.appendChild(item));
+
+        let parcelListArchive = document.getElementById("parcel-list-archive");
+        let archivedParcels = parcels.filter((parcel)=>{
+            return parcel.archived === true;
+        }).map((parcel)=>this.buildParcelItem(parcel));
+        parcelListArchive.innerHTML = "";
+        archivedParcels.forEach((item) => parcelListArchive.appendChild(item));
     }
 
     setMaybeParcel(parcel, parcel_id) {
@@ -86,7 +96,11 @@ class App {
         let now = new Date();
         for (let parcel of parcels) {
             if (now - parcel.addTime < this.updateInterval) {
-                console.log("Skipping parcel", parcel.id);
+                console.log("Skipping parcel due to time", parcel.id);
+                continue;
+            }
+            if (parcel.archived) {
+                console.log("Skipping archived parcel", parcel.id);
                 continue;
             }
             let carriers = parcel.carriers;
@@ -110,6 +124,7 @@ class App {
     }
 
     buildParcelItem(parcel) {
+        let archived = parcel.archived || false;
         let item = document.createElement("li");
         item.classList.add("parcel-item");
         // display name, carriers, tracking number, last event datetime, status
@@ -134,7 +149,9 @@ class App {
         const locale = navigator.language;
         let humanLastEvent = parsedLastEvent.toLocaleString("en-CA", options);
         let humanFirstEvent = parsedFirstEvent.toLocaleString("en-CA", options);
+        let archiveText = archived ? "Unarchive" : "Archive";
         item.innerHTML = `
+        <div class="parcel-info">
             <div class="parcel-card-line">
                 <span class="parcel-id">${id}</span>
                 <span class="parcel-status">${parcel.status}</span>
@@ -151,12 +168,44 @@ class App {
                 <span class="parcel-product">${parcel.product || ""}</span>
                 <span class="parcel-carriers">${parcel.carriers.join(", ")}</span>
             </div>
+        </div>
+        <div class="parcel-actions">
+            <button class="parcel-go">Go</button>
+            <button class="parcel-archive">${archiveText}</button>
+            <button class="parcel-delete">Delete</button>
+        </div>
         `;
-        item.addEventListener("click", (_) => {
+        let goButton = item.querySelector(".parcel-go");
+        let archiveButton = item.querySelector(".parcel-archive");
+        let deleteButton = item.querySelector(".parcel-delete");
+        goButton.addEventListener("click", (_) => {
             this.displayParcelDetails(parcel.id);
             this.switchView(false);
         });
+        archiveButton.addEventListener("click", (_) => {
+            parcel.archived = !archived;
+            localStorage.setItem(parcel.id, JSON.stringify(parcel));
+            this.displayParcels();
+        });
+        deleteButton.addEventListener("click", (_) => {
+            this.deleteAction(parcel.id);
+        });
         return item;
+    }
+
+    deleteAction(parcelId) {
+        let deleteDialog = document.getElementById("confirm-delete-dialog");
+        let deleteButton = document.getElementById("confirm-delete");
+        let cancelButton = document.getElementById("cancel-delete");
+        deleteButton.addEventListener("click", (_) => {
+            localStorage.removeItem(parcelId);
+            this.displayParcels();
+            deleteDialog.close();
+        });
+        cancelButton.addEventListener("click", (_) => {
+            deleteDialog.close();
+        });
+        deleteDialog.showModal();
     }
 
     displayParcelDetails(parcelId) {
@@ -199,22 +248,38 @@ class App {
 
     switchView(firstView){
         let parcelList = document.getElementById("parcel-list");
+        let parcelListArchive = document.getElementById("parcel-list-archive");
+        let archiveTitle = document.getElementById("archive-title");
         let parcelDetails = document.getElementById("parcel-events");
         let addParcel = document.getElementById("addParcel");
         let backButton = document.getElementById("back");
         this.view = firstView;
         if (firstView){
             parcelList.style.display = "block";
+            parcelListArchive.style.display = "block";
+            archiveTitle.style.display = "block";
             parcelDetails.style.display = "none";
             addParcel.style.display = "block";
             backButton.style.display = "none";
         }
         else {
             parcelList.style.display = "none";
+            parcelListArchive.style.display = "none";
+            archiveTitle.style.display = "none";
             parcelDetails.style.display = "block";
             addParcel.style.display = "none";
             backButton.style.display = "block";
         }
+    }
+
+    initEscapeKeyBack() {
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                if (!this.view) {
+                    this.switchView(true);
+                }
+            }
+        });
     }
 
 

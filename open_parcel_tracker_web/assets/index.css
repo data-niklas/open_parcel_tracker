@@ -53,6 +53,7 @@ body {
 
 #footer {
     height: 28px;
+    text-align: center;
 }
 
 #parcel-events, #back {
@@ -71,7 +72,7 @@ body {
     border-color: #e050c3;
 }
 
-#app > ul {
+#app > * {
     max-width: 800px;
     min-width: 500px;
 }
@@ -101,4 +102,90 @@ ul {
 
 .parcel-status, .parcel-last-event, .parcel-event-description {
     font-weight: bold;
+}
+
+.parcel-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.parcel-info {
+    flex-grow: 1;
+}
+
+.parcel-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    margin-left: 5px;
+    padding-left: 5px;
+    border-left: 1px solid #ccc;
+}
+
+.parcel-actions > button {
+    flex-grow: 1;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+}
+
+
+
+.parcel-go {
+    color: #4CAF50;
+}
+
+.parcel-archive {
+    color: #2196F3;
+}
+
+.parcel-delete {
+    color: #f44336;
+}
+.parcel-go:hover {
+    background: #e8f5e9;
+}
+
+.parcel-archive:hover {
+    background: #e3f2fd;
+}
+
+.parcel-delete:hover {
+    background: #ffebee;
+}
+
+#parcel-delete-button-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#confirm-delete {
+    color: #f44336;
+}
+
+#cancel-delete {
+    color: #2196F3;
+    font-weight: bold;
+}
+
+
+        #archive-title {
+            display: flex;
+            flex-direction: row;
+        }
+        
+        #archive-title:before,
+        #archive-title:after {
+            content: "";
+            flex: 1 1;
+            border-bottom: 2px solid #000;
+            margin: auto;
+        }
+
+#archive-title > span {
+    margin: 0 10px;
 }
