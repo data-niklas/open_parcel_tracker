@@ -1,6 +1,6 @@
 html {
-    font-size: 16px;
-    font-family: 'Roboto', sans-serif;
+    font-size: 17px;
+    font-family: Arial;
     line-height: 1.5;
     color: #333;
 }
@@ -39,7 +39,7 @@ body {
 }
 
 #header > button:hover {
-    background: #f3f3f3;
+    background: #e3e3e3;
 }
 
 #app {
@@ -68,8 +68,11 @@ body {
 }
 
 #addParcel:focus {
-    outline: 2px solid #e050c3;
-    border-color: #e050c3;
+    /* outline: 2px solid #e050c3; */
+    /* border-color: #e050c3; */
+        outline: 2px dotted #ff8fde;
+        border-color: #ff8fde;
+
 }
 
 #app > * {
@@ -82,12 +85,14 @@ body {
     padding: 7px;
     border-radius: 5px;
     margin: 8px 0;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 #app > ul > li:hover {
     background: #fff;
     transform: scale(1.01);
     outline: 2px dotted #ff8fde;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .parcel-card-line {
@@ -100,7 +105,7 @@ ul {
     padding: 0;
 }
 
-.parcel-status, .parcel-last-event, .parcel-event-description {
+.parcel-status, .parcel-event-description {
     font-weight: bold;
 }
 
@@ -126,7 +131,7 @@ ul {
 
 .parcel-actions > button {
     flex-grow: 1;
-    padding: 0;
+    padding: 3px;
     margin: 0;
     border: none;
     background: transparent;
@@ -188,4 +193,27 @@ ul {
 
 #archive-title > span {
     margin: 0 10px;
+}
+
+.parcel-status {
+    margin-right: 20px;
+}
+
+.parcel-info > table {
+    width: 100%;
+}
+
+.table-key {
+    text-align: left;
+    /* font-style: italic; */
+    font-size: 14px;
+}
+.table-value {
+    font-weight: normal;
+    text-align: right;
+}
+
+
+.parcel-info > table > tbody > tr > td:nth-child(2) {
+    padding-right: 20px;
 }

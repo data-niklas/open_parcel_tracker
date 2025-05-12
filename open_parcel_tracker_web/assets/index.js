@@ -1,5 +1,7 @@
 const zip = (arr1, arr2) => arr1.map((element, index) => [element, arr2[index]]);
 
+const EMPTY = "N/A";
+
 class App {
     constructor() {
         this.init();
@@ -128,7 +130,7 @@ class App {
         let item = document.createElement("li");
         item.classList.add("parcel-item");
         // display name, carriers, tracking number, last event datetime, status
-        let name = parcel.name || "";
+        let name = parcel.name || EMPTY;
         let id = parcel.id;
         if (parcel.name) {
             id = `${parcel.name} (${id})`;
@@ -153,21 +155,22 @@ class App {
         item.innerHTML = `
         <div class="parcel-info">
             <div class="parcel-card-line">
-                <span class="parcel-id">${id}</span>
                 <span class="parcel-status">${parcel.status}</span>
+                <span class="parcel-id">${id}</span>
             </div>
-            <div class="parcel-card-line"> 
-                <span class="parcel-first-event">${humanFirstEvent}</span>
-                <span class="parcel-last-event">${humanLastEvent}</span>
-            </div>
-            <div class="parcel-card-line">
-                <span class="parcel-start-region">${parcel.start_region || ""}</span>
-                <span class="parcel-end-region">${parcel.end_region}</span>
-            </div>
-            <div class="parcel-card-line">
-                <span class="parcel-product">${parcel.product || ""}</span>
-                <span class="parcel-carriers">${parcel.carriers.join(", ")}</span>
-            </div>
+            <table>
+                <tr>
+                    <td class="table-key">Tracked since:</td><td class="table-value">${humanFirstEvent}</td>
+                    <td class="table-key">Last event:</td><td class="table-value">${humanLastEvent}</td>
+                </tr>
+                <tr>
+                    <td class="table-key">Start region:</td><td class="table-value">${parcel.start_region || EMPTY}</td>
+                    <td class="table-key">End region:</td><td class="table-value">${parcel.end_region}</td>
+                </tr>
+                <tr>
+                    <td class="table-key">Product:</td><td class="table-value">${parcel.product || EMPTY}</td>
+                    <td class="table-key">Carriers:</td><td class="table-value">${parcel.carriers.join(", ")}</td>
+            </table>
         </div>
         <div class="parcel-actions">
             <button class="parcel-go">Go</button>
