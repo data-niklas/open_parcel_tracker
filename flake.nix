@@ -27,19 +27,19 @@
           pkgs = import nixpkgs {inherit overlays system;};
         });
   in {
-    # defaultPackage = forEachSupportedSystem ({pkgs}:
-    #   pkgs.rustPlatform.buildRustPackage rec {
-    #     pname = "parcel_tracker";
-    #     version = "0.1.0";
-    #     src = ./.;
-    #     cargoLock = {
-    #       lockFile = ./Cargo.lock;
-    #       outputHashes = {
-    #       };
-    #     };
-    #     env = {
-    #     };
-    #   });
+    defaultPackage = forEachSupportedSystem ({pkgs}:
+      pkgs.rustPlatform.buildRustPackage rec {
+        pname = "open_parcel_tracker";
+        version = "0.1.0";
+        src = ./.;
+        cargoLock = {
+          lockFile = ./Cargo.lock;
+          outputHashes = {
+          };
+        };
+        env = {
+        };
+      });
     devShells = forEachSupportedSystem ({pkgs}: {
       default = pkgs.mkShell rec {
         packages = with pkgs; [
