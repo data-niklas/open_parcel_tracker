@@ -71,14 +71,14 @@ class App {
         });
         let parcelItems = parcels.filter((parcel)=>{
             return parcel.archived === undefined || parcel.archived === false;
-        }).map((parcel)=>this.buildParcelItem(parcel));
+        }).map((parcel)=>this.buildParcelItem(parcel, true));
         parcelList.innerHTML = "";
         parcelItems.forEach((item) => parcelList.appendChild(item));
 
         let parcelListArchive = document.getElementById("parcel-list-archive");
         let archivedParcels = parcels.filter((parcel)=>{
             return parcel.archived === true;
-        }).map((parcel)=>this.buildParcelItem(parcel));
+        }).map((parcel)=>this.buildParcelItem(parcel, true));
         parcelListArchive.innerHTML = "";
         archivedParcels.forEach((item) => parcelListArchive.appendChild(item));
     }
@@ -89,6 +89,28 @@ class App {
             return;
         }
         this.addParcel(parcel_id, parcel);
+    }
+
+    async update(){
+        if (this.view) {
+            this.updateParcels();
+        }
+        else {
+            this.updateParcel();
+        }
+    }
+
+    async updateParcel() {
+        let parcel = this.loadParcel(this.currentParcelId);
+        let carriers = parcel.carriers;
+        let id = parcel.id;
+        let response = await this.trackParcels([[id, carriers]], navigator.language);
+        let result = await response.json();
+        if (result.Ok !== null) {
+            console.log(result.Ok[0]);
+            this.setMaybeParcel(result.Ok[0], id);
+            this.displayParcelDetails(id);
+        }
     }
 
 
@@ -125,7 +147,7 @@ class App {
 
     }
 
-    buildParcelItem(parcel) {
+    buildParcelItem(parcel, withActions) {
         let archived = parcel.archived || false;
         let item = document.createElement("li");
         item.classList.add("parcel-item");
@@ -172,12 +194,16 @@ class App {
                     <td class="table-key">Carriers:</td><td class="table-value">${parcel.carriers.join(", ")}</td>
             </table>
         </div>
-        <div class="parcel-actions">
+        `;
+        if (withActions) {
+            let actions = document.createElement("div");
+            actions.classList.add("parcel-actions");
+            actions.innerHTML = `
             <button class="parcel-go">Go</button>
             <button class="parcel-archive">${archiveText}</button>
             <button class="parcel-delete">Delete</button>
-        </div>
-        `;
+            `;
+            item.appendChild(actions);
         let goButton = item.querySelector(".parcel-go");
         let archiveButton = item.querySelector(".parcel-archive");
         let deleteButton = item.querySelector(".parcel-delete");
@@ -193,7 +219,17 @@ class App {
         deleteButton.addEventListener("click", (_) => {
             this.deleteAction(parcel.id);
         });
+        }
         return item;
+    }
+
+    createDivider(text) {
+        let divider = document.createElement("div");
+        divider.classList.add("divider");
+        divider.innerHTML = `
+            <span>${text}</span>
+        `;
+        return divider;
     }
 
     deleteAction(parcelId) {
@@ -215,10 +251,15 @@ class App {
         let parcel = this.loadParcel(parcelId);
         let parcelDetails = document.getElementById("parcel-events");
         parcelDetails.innerHTML = "";
+        let parcelCard = this.buildParcelItem(parcel, false);
+        parcelDetails.appendChild(parcelCard);
+        parcelDetails.appendChild(this.createDivider("Events"));
         parcel.events.forEach((event)=>{
             parcelDetails.appendChild(this.buildParcelEvent(event));
         });
+        this.currentParcelId = parcelId;
     }
+
 
     buildParcelEvent(event) {
         // datetime, optional region, description, carrier
@@ -309,7 +350,7 @@ class App {
             }
         });
         let refreshButton = document.getElementById("refreshButton");
-        refreshButton.addEventListener("click", async (_) => await this.updateParcels());
+        refreshButton.addEventListener("click", async (_) => await this.update());
         let backButton = document.getElementById("back");
         backButton.addEventListener("click", (_) => this.switchView(true));
     }

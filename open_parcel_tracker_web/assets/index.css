@@ -108,6 +108,10 @@ ul {
 .parcel-status, .parcel-event-description {
     font-weight: bold;
 }
+.parcel-event-description {
+    text-wrap: balance;
+    max-width: 75%;
+}
 
 .parcel-item {
     display: flex;
@@ -178,20 +182,20 @@ ul {
 }
 
 
-        #archive-title {
-            display: flex;
-            flex-direction: row;
-        }
+.divider {
+    display: flex;
+    flex-direction: row;
+}
         
-        #archive-title:before,
-        #archive-title:after {
-            content: "";
-            flex: 1 1;
-            border-bottom: 2px solid #000;
-            margin: auto;
-        }
+.divider:before,
+.divider:after {
+    content: "";
+    flex: 1 1;
+    border-bottom: 2px solid #000;
+    margin: auto;
+}
 
-#archive-title > span {
+.divider > span {
     margin: 0 10px;
 }
 
