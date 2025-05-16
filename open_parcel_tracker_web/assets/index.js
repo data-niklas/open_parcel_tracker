@@ -74,6 +74,16 @@ class App {
         }).map((parcel)=>this.buildParcelItem(parcel, true));
         parcelList.innerHTML = "";
         parcelItems.forEach((item) => parcelList.appendChild(item));
+        if (parcelItems.length === 0) {
+            let emptyItem = document.createElement("li");
+            emptyItem.classList.add("empty-item");
+            emptyItem.innerHTML = `
+            <div class="empty-item-text">
+                <span>~ No parcels added ~</span>
+            </div>
+            `;
+            parcelList.appendChild(emptyItem);
+        }
 
         let parcelListArchive = document.getElementById("parcel-list-archive");
         let archivedParcels = parcels.filter((parcel)=>{
@@ -81,6 +91,16 @@ class App {
         }).map((parcel)=>this.buildParcelItem(parcel, true));
         parcelListArchive.innerHTML = "";
         archivedParcels.forEach((item) => parcelListArchive.appendChild(item));
+        if (archivedParcels.length === 0) {
+            let emptyItem = document.createElement("li");
+            emptyItem.classList.add("empty-item");
+            emptyItem.innerHTML = `
+            <div class="empty-item-text">
+                <span>~ No archived parcels ~</span>
+            </div>
+            `;
+            parcelListArchive.appendChild(emptyItem);
+        }
     }
 
     setMaybeParcel(parcel, parcel_id) {
@@ -294,6 +314,7 @@ class App {
         let parcelList = document.getElementById("parcel-list");
         let parcelListArchive = document.getElementById("parcel-list-archive");
         let archiveTitle = document.getElementById("archive-title");
+        let trackedTitle = document.getElementById("tracked-title");
         let parcelDetails = document.getElementById("parcel-events");
         let addParcel = document.getElementById("addParcel");
         let backButton = document.getElementById("back");
@@ -302,6 +323,7 @@ class App {
             parcelList.style.display = "block";
             parcelListArchive.style.display = "block";
             archiveTitle.style.display = "flex";
+            trackedTitle.style.display = "flex";
             parcelDetails.style.display = "none";
             addParcel.style.display = "block";
             backButton.style.display = "none";
@@ -310,6 +332,7 @@ class App {
             parcelList.style.display = "none";
             parcelListArchive.style.display = "none";
             archiveTitle.style.display = "none";
+            trackedTitle.style.display = "none";
             parcelDetails.style.display = "block";
             addParcel.style.display = "none";
             backButton.style.display = "block";
