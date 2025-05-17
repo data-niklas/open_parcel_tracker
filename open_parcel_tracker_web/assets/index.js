@@ -46,9 +46,7 @@ class App {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                parcels: parcels,
-            }),
+            body: JSON.stringify(parcels),
         });
         let result = await response.json();
         for (let parcel of result) {
