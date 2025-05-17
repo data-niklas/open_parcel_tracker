@@ -9,6 +9,7 @@ class App {
 
     async init() {
         this.updateInterval = 1000 * 60 * 15; // 15 minutes
+        this.isSyncSupported = await this.checkSupportsSync();
         await this.loadCarriers();
         this.loadParcels();
         this.displayParcels();
@@ -16,6 +17,44 @@ class App {
         this.initEscapeKeyBack();
         console.log("App initialized");
         console.log(this.carriers);
+        this.initSyncButton();
+    }
+
+    initSyncButton() {
+        let syncButton = document.getElementById("syncButton");
+        if (!this.isSyncSupported) {
+            syncButton.style.display = "none";
+        }
+        else {
+            syncButton.addEventListener("click", async (_) => {
+                await this.sync();
+            });
+        }
+        
+    }
+
+    async checkSupportsSync() {
+        let response = await fetch("/has_sync");
+        let result = await response.json();
+        return result === true;
+    }
+
+    async sync() {
+        let parcels = this.loadParcels();
+        let response = await fetch("/sync", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                parcels: parcels,
+            }),
+        });
+        let result = await response.json();
+        for (let parcel of result) {
+            this.addParcel(parcel.id, parcel);
+        }
+        this.displayParcels();
     }
 
     async loadCarriers() {

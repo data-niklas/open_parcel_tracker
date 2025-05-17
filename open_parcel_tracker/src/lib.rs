@@ -29,7 +29,7 @@ pub struct CarrierParcelEvent {
     pub description: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Parcel {
     pub id: String,
     pub start_region: Option<String>,
@@ -39,6 +39,12 @@ pub struct Parcel {
     pub events: Vec<ParcelEvent>,
     pub carriers: Vec<Carrier>,
     pub name: Option<String>,
+}
+
+impl std::hash::Hash for Parcel {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
 }
 
 impl TryFrom<Vec<CarrierParcel>> for Parcel {
@@ -89,7 +95,7 @@ impl TryFrom<Vec<CarrierParcel>> for Parcel {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ParcelEvent {
     pub datetime: DateTime<Utc>,
     pub region: Option<String>,
@@ -97,7 +103,7 @@ pub struct ParcelEvent {
     pub carrier: Carrier,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, EnumCount, EnumIter)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, EnumCount, EnumIter, PartialEq, Eq)]
 #[cfg_attr(feature = "cli", derive(clap::ValueEnum))]
 pub enum Carrier {
     Cainiao,

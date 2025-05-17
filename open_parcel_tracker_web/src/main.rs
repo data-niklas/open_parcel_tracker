@@ -1,6 +1,17 @@
+use std::{
+    collections::{HashMap, HashSet},
+    sync::{Arc, Mutex},
+};
+
 use icu_locid::LanguageIdentifier;
 use open_parcel_tracker::{track_parcels, Carrier, Parcel, TrackingError};
-use rocket::serde::json::Json;
+use rocket::{
+    http::Status,
+    outcome::IntoOutcome,
+    request::{FromRequest, Outcome},
+    serde::json::Json,
+    Request, State,
+};
 use serde::Deserialize;
 use strum::IntoEnumIterator;
 #[macro_use]
@@ -49,13 +60,70 @@ async fn track(json: Json<TrackRequest>) -> Json<Result<Vec<Option<Parcel>>, Tra
     parcels.into()
 }
 
+// -------------- SYNC -----------------
+struct XTokenSubject<'h>(&'h str);
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for XTokenSubject<'r> {
+    type Error = Status;
+
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let request_headers = request.headers();
+        let maybe_x_token_subject = request_headers
+            .get_one("X-Token-Subject")
+            .map(XTokenSubject)
+            .ok_or(Status::BadRequest);
+        maybe_x_token_subject.or_forward(Status::InternalServerError)
+    }
+}
+
+pub type SyncStorage = HashMap<String, HashSet<Parcel>>;
+pub type SyncStorageWrapper = Arc<Mutex<SyncStorage>>;
+
+#[post("/sync", data = "<json>")]
+async fn sync(
+    json: Json<Vec<Parcel>>,
+    user_name: XTokenSubject<'_>,
+    storage_state: &State<SyncStorageWrapper>,
+) -> Json<Vec<Parcel>> {
+    let mut storage = storage_state.lock().unwrap();
+    if !storage.contains_key(user_name.0) {
+        storage.insert(user_name.0.to_string(), HashSet::new());
+    }
+    let user_data = storage.get_mut(user_name.0).unwrap();
+    for parcel in json.iter() {
+        if user_data.contains(parcel) {
+            let other_parcel = user_data.get(parcel).unwrap();
+            let other_parcel_fresher = other_parcel.events.len() > parcel.events.len();
+            if !other_parcel_fresher {
+                user_data.insert(parcel.clone());
+            }
+        } else {
+            user_data.insert(parcel.clone());
+        }
+    }
+    let mut result = Vec::new();
+    for parcel in user_data.iter() {
+        result.push(parcel.clone());
+    }
+    Json(result)
+}
+
+struct SupportsSync(bool);
+#[get("/has_sync")]
+fn has_sync(has_sync: &State<SupportsSync>) -> Json<bool> {
+    Json(has_sync.0)
+}
+
 #[rocket::main]
 async fn main() {
-    let _ = rocket::build()
-        .mount(
-            "/",
-            routes![default, index_html, index_js, index_css, carriers, track],
-        )
-        .launch()
-        .await;
+    let enable_sync = std::env::var("ENABLE_SYNC").is_ok();
+    let mut routes = routes![default, index_html, index_js, index_css, carriers, track, has_sync];
+    if enable_sync {
+        routes.extend(routes![sync]);
+    }
+    let mut rocket_pre_build = rocket::build().manage(SupportsSync(enable_sync));
+    if enable_sync {
+        rocket_pre_build = rocket_pre_build.manage(Arc::new(Mutex::new(SyncStorage::new())));
+    }
+    let _ = rocket_pre_build.mount("/", routes).launch().await;
 }
