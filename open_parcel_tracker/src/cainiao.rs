@@ -39,6 +39,8 @@ pub async fn track(
     request.headers.insert("Accept", "application/json");
     request.headers.insert("Accept-Language", locale);
     request.headers.insert("Content-Type", "application/json");
+    request.headers.insert("Host", "global.cainiao.com");
+    request.headers.insert("Cache-Control", "keep-alive");
 
     let response = match fetch_async(request).await {
         Ok(response) => response,

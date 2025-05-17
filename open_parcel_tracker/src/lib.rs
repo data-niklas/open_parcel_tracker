@@ -100,9 +100,9 @@ pub struct ParcelEvent {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, EnumCount, EnumIter)]
 #[cfg_attr(feature = "cli", derive(clap::ValueEnum))]
 pub enum Carrier {
+    Cainiao,
     DHL,
     FourPX,
-    Cainiao,
 }
 
 impl Carrier {
@@ -142,8 +142,8 @@ impl CarrierService for Carrier {
         locale: Language,
     ) -> Result<Vec<Option<CarrierParcel>>, TrackingError> {
         match self {
-            Carrier::DHL => dhl::track(parcels, locale).await,
             Carrier::Cainiao => cainiao::track(parcels, locale).await,
+            Carrier::DHL => dhl::track(parcels, locale).await,
             Carrier::FourPX => four_px::track(parcels, locale).await,
         }
     }
