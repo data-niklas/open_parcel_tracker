@@ -1,10 +1,12 @@
 use std::{
     collections::{HashMap, HashSet},
+    hash::Hash,
     sync::{Arc, Mutex},
 };
 
+use chrono::{DateTime, Utc};
 use icu_locid::LanguageIdentifier;
-use open_parcel_tracker::{track_parcels, Carrier, Parcel, TrackingError};
+use open_parcel_tracker::{track_parcels, Carrier, Parcel, ParcelEvent, TrackingError};
 use rocket::{
     http::Status,
     outcome::IntoOutcome,
@@ -12,10 +14,32 @@ use rocket::{
     serde::json::Json,
     Request, State,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 #[macro_use]
 extern crate rocket;
+
+#[allow(non_snake_case)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SyncParcel {
+    pub id: String,
+    pub start_region: Option<String>,
+    pub end_region: String,
+    pub status: String,
+    pub product: Option<String>,
+    pub events: Vec<ParcelEvent>,
+    pub carriers: Vec<Carrier>,
+    pub name: Option<String>,
+    // Custom JS attributes
+    pub archived: bool,
+    pub addTime: DateTime<Utc>,
+}
+
+impl Hash for SyncParcel {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
 
 #[derive(Deserialize)]
 struct TrackRequest {
@@ -76,15 +100,15 @@ impl<'r> FromRequest<'r> for XTokenSubject<'r> {
     }
 }
 
-pub type SyncStorage = HashMap<String, HashSet<Parcel>>;
+pub type SyncStorage = HashMap<String, HashSet<SyncParcel>>;
 pub type SyncStorageWrapper = Arc<Mutex<SyncStorage>>;
 
 #[post("/sync", data = "<json>")]
 async fn sync(
-    json: Json<Vec<Parcel>>,
+    json: Json<Vec<SyncParcel>>,
     user_name: XTokenSubject<'_>,
     storage_state: &State<SyncStorageWrapper>,
-) -> Json<Vec<Parcel>> {
+) -> Json<Vec<SyncParcel>> {
     let mut storage = storage_state.lock().unwrap();
     if !storage.contains_key(user_name.0) {
         storage.insert(user_name.0.to_string(), HashSet::new());

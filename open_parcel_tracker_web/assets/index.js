@@ -50,7 +50,7 @@ class App {
         });
         let result = await response.json();
         for (let parcel of result) {
-            this.addParcel(parcel.id, parcel);
+            localStorage.setItem(parcel.id, JSON.stringify(parcel));
         }
         this.displayParcels();
     }

@@ -1151,6 +1151,7 @@ version = "0.1.0"
 name = "open_parcel_tracker_web"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "icu_locid",
  "open_parcel_tracker",
  "rocket",
