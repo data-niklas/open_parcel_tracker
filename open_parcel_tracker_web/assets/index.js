@@ -11,7 +11,6 @@ class App {
         this.updateInterval = 1000 * 60 * 15; // 15 minutes
         this.isSyncSupported = await this.checkSupportsSync();
         await this.loadCarriers();
-        this.loadParcels();
         this.displayParcels();
         this.initEvents();
         this.initEscapeKeyBack();
@@ -107,7 +106,7 @@ class App {
             return aEvent.datetime.localeCompare(bEvent.datetime);
         });
         let parcelItems = parcels.filter((parcel)=>{
-            return parcel.archived === undefined || parcel.archived === false;
+            return parcel.archived === undefined || parcel.archived === false || parcel.archived === null;
         }).map((parcel)=>this.buildParcelItem(parcel, true));
         parcelList.innerHTML = "";
         parcelItems.forEach((item) => parcelList.appendChild(item));
@@ -140,7 +139,7 @@ class App {
         }
     }
 
-    setMaybeParcel(parcel, parcel_id) {
+    setMaybeParcel(parcel_id, parcel) {
         if (parcel === null) {
             localStorage.removeItem(parcel_id);
             return;
@@ -165,7 +164,7 @@ class App {
         let result = await response.json();
         if (result.Ok !== null) {
             console.log(result.Ok[0]);
-            this.setMaybeParcel(result.Ok[0], id);
+            this.setMaybeParcel(id, result.Ok[0]);
             this.displayParcelDetails(id);
         }
     }
@@ -197,7 +196,7 @@ class App {
                 console.log(result.Ok);
                 let parcel_with_id_and_carrier = zip(result.Ok, request);
                 for (let parcel of parcel_with_id_and_carrier) {
-                    this.setMaybeParcel(parcel[0], parcel[1][0]);
+                    this.setMaybeParcel(parcel[1][0], parcel[0]);
                 }
                 this.displayParcels();
             }
@@ -405,7 +404,7 @@ class App {
             let result = await response.json();
             if (result.Ok !== null) {
                 console.log(result.Ok[0]);
-                this.addParcel(parcelCode, result.Ok[0]);
+                this.setMaybeParcel(parcelCode, result.Ok[0]);
                 this.displayParcels();
             }
         });
