@@ -31,7 +31,7 @@ pub struct SyncParcel {
     pub carriers: Vec<Carrier>,
     pub name: Option<String>,
     // Custom JS attributes
-    pub archived: bool,
+    pub archived: Option<bool>,
     pub addTime: DateTime<Utc>,
 }
 
